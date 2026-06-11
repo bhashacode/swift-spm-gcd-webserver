@@ -17,29 +17,27 @@ if [[ ! -f "build/swiftformat" ]]; then
   mv "build/SwiftFormat-$SWIFT_FORMAT_VERSION/CommandLineTool/swiftformat" "build/swiftformat"
 fi
 
-pushd "GCDWebServer/Core"
+pushd "Sources/GCDWebServer/Core"
 clang-format -style=file -i *.h *.m
 popd
-pushd "GCDWebServer/Requests"
+pushd "Sources/GCDWebServer/Requests"
 clang-format -style=file -i *.h *.m
 popd
-pushd "GCDWebServer/Responses"
+pushd "Sources/GCDWebServer/Responses"
 clang-format -style=file -i *.h *.m
 popd
-pushd "GCDWebUploader"
+pushd "Sources/GCDWebServer/WebUploader"
 clang-format -style=file -i *.h *.m
 popd
-pushd "GCDWebDAVServer"
+pushd "Sources/GCDWebServer/WebDAV"
 clang-format -style=file -i *.h *.m
 popd
 
-pushd "Frameworks"
-clang-format -style=file -i *.h *.m
+pushd "Sources/GCDWebServer/include"
+clang-format -style=file -i *.h
 popd
-pushd "Mac"
-clang-format -style=file -i *.m
+pushd "Sources/GCDWebServer/Private"
+clang-format -style=file -i *.h
 popd
-
-build/swiftformat --indent 2 "iOS" "tvOS"
 
 echo "OK"

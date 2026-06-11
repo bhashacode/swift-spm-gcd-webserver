@@ -1,12 +1,8 @@
 Overview
 ========
 
-[![Build Status](https://travis-ci.org/swisspol/GCDWebServer.svg?branch=master)](https://travis-ci.org/swisspol/GCDWebServer)
-[![Version](http://cocoapod-badges.herokuapp.com/v/GCDWebServer/badge.png)](https://cocoapods.org/pods/GCDWebServer)
-[![Platform](http://cocoapod-badges.herokuapp.com/p/GCDWebServer/badge.png)](https://github.com/swisspol/GCDWebServer)
-[![License](http://img.shields.io/cocoapods/l/GCDWebServer.svg)](LICENSE)
 
-GCDWebServer is a modern and lightweight GCD based HTTP 1.1 server designed to be embedded in iOS, macOS & tvOS apps. It was written from scratch with the following goals in mind:
+GCDWebServer is a modern and lightweight GCD based HTTP 1.1 server designed to be embedded in iOS apps. It was written from scratch with the following goals in mind:
 * Elegant and easy to use architecture with only 4 core classes: server, connection, request and response (see "Understanding GCDWebServer's Architecture" below)
 * Well designed API with fully documented headers for easy integration and customization
 * Entirely built with an event-driven design using [Grand Central Dispatch](http://en.wikipedia.org/wiki/Grand_Central_Dispatch) for best performance and concurrency
@@ -27,45 +23,34 @@ Extra built-in features:
 * NAT port mapping (IPv4 only)
 
 Included extensions:
-* [GCDWebUploader](GCDWebUploader/GCDWebUploader.h): subclass of ```GCDWebServer``` that implements an interface for uploading and downloading files using a web browser
-* [GCDWebDAVServer](GCDWebDAVServer/GCDWebDAVServer.h): subclass of ```GCDWebServer``` that implements a class 1 [WebDAV](https://en.wikipedia.org/wiki/WebDAV) server (with partial class 2 support for macOS Finder)
+* [GCDWebUploader](Sources/GCDWebServer/include/GCDWebUploader.h): subclass of ```GCDWebServer``` that implements an interface for uploading and downloading files using a web browser
+* [GCDWebDAVServer](Sources/GCDWebServer/include/GCDWebDAVServer.h): subclass of ```GCDWebServer``` that implements a class 1 [WebDAV](https://en.wikipedia.org/wiki/WebDAV) server (with partial class 2 support for macOS Finder)
 
 What's not supported (but not really required from an embedded HTTP server):
 * Keep-alive connections
 * HTTPS
 
 Requirements:
-* macOS 10.7 or later (x86_64)
-* iOS 8.0 or later (armv7, armv7s or arm64)
-* tvOS 9.0 or later (arm64)
-* ARC memory management only (if you need MRC support use GCDWebServer 3.1 or earlier)
+* iOS 15.6 or later at runtime.
+* Swift Package Manager / Xcode package integration.
+* ARC memory management only.
 
-Getting Started
-===============
+Installation
+============
 
-Download or check out the [latest release](https://github.com/swisspol/GCDWebServer/releases) of GCDWebServer then add the entire "GCDWebServer" subfolder to your Xcode project. If you intend to use one of the extensions like GCDWebDAVServer or GCDWebUploader, add these subfolders as well. Finally link to `libz` (via Target > Build Phases > Link Binary With Libraries) and add `$(SDKROOT)/usr/include/libxml2` to your header search paths (via Target > Build Settings > HEADER_SEARCH_PATHS).
+### Swift Package Manager
 
-Alternatively, you can install GCDWebServer using [CocoaPods](http://cocoapods.org/) by simply adding this line to your Podfile:
-```
-pod "GCDWebServer", "~> 3.0"
-```
-If you want to use GCDWebUploader, use this line instead:
-```
-pod "GCDWebServer/WebUploader", "~> 3.0"
-```
-Or this line for GCDWebDAVServer:
-```
-pod "GCDWebServer/WebDAV", "~> 3.0"
-```
+In Xcode:
 
-And finally run `$ pod install`.
+1. Open your project.
+2. Go to File > Add Package Dependencies.
+3. Enter this repository URL.
+4. Select the required version, branch, or commit. If this fork has no release tag yet, select the branch or commit you want to pin.
+5. Add the `GCDWebServer` package product to your app target.
 
-You can also use [Carthage](https://github.com/Carthage/Carthage) by adding this line to your Cartfile (3.2.5 is the first release with Carthage support):
-```
-github "swisspol/GCDWebServer" ~> 3.2.5
-```
+Minimum supported iOS version: 15.6.
 
-Then run `$ carthage update` and add the generated frameworks to your Xcode projects (see [Carthage instructions](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application)).
+The SwiftPM manifest uses `.iOS(.v15)` because SwiftPM cannot express iOS 15.6 exactly in `Package.swift`; consumers should still treat iOS 15.6 as the intended minimum runtime. SwiftPM links the required system frameworks and libraries and bundles the GCDWebUploader web assets automatically.
 
 Help & Support
 ==============
@@ -79,9 +64,7 @@ Hello World
 
 These code snippets show how to implement a custom HTTP server that runs on port 8080 and returns a "Hello World" HTML page to any request. Since GCDWebServer uses GCD blocks to handle requests, no subclassing or delegates are needed, which results in very clean code.
 
-**IMPORTANT:** If not using CocoaPods, be sure to add the `libz` shared system library to the Xcode target for your app.
-
-**macOS version (command line tool):**
+**Objective-C version:**
 ```objectivec
 #import "GCDWebServer.h"
 #import "GCDWebServerDataResponse.h"
@@ -147,7 +130,7 @@ int main(int argc, const char* argv[]) {
 @end
 ```
 
-**macOS Swift version (command line tool):**
+**Swift version:**
 
 ***webServer.swift***
 ```swift
@@ -238,7 +221,7 @@ Serving a Static Website
 
 GCDWebServer includes a built-in handler that can recursively serve a directory (it also lets you control how the ["Cache-Control"](http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9) header should be set):
 
-**macOS version (command line tool):**
+**Objective-C version:**
 ```objectivec
 #import "GCDWebServer.h"
 
@@ -267,10 +250,10 @@ Understanding GCDWebServer's Architecture
 =========================================
 
 GCDWebServer's architecture consists of only 4 core classes:
-* [GCDWebServer](GCDWebServer/Core/GCDWebServer.h) manages the socket that listens for new HTTP connections and the list of handlers used by the server.
-* [GCDWebServerConnection](GCDWebServer/Core/GCDWebServerConnection.h) is instantiated by ```GCDWebServer``` to handle each new HTTP connection. Each instance stays alive until the connection is closed. You cannot use this class directly, but it is exposed so you can subclass it to override some hooks.
-* [GCDWebServerRequest](GCDWebServer/Core/GCDWebServerRequest.h) is created by the ```GCDWebServerConnection``` instance after HTTP headers have been received. It wraps the request and handles the HTTP body if any. GCDWebServer comes with [several subclasses](GCDWebServer/Requests) of ```GCDWebServerRequest``` to handle common cases like storing the body in memory or stream it to a file on disk.
-* [GCDWebServerResponse](GCDWebServer/Core/GCDWebServerResponse.h) is created by the request handler and wraps the response HTTP headers and optional body. GCDWebServer comes with [several subclasses](GCDWebServer/Responses) of ```GCDWebServerResponse``` to handle common cases like HTML text in memory or streaming a file from disk.
+* [GCDWebServer](Sources/GCDWebServer/include/GCDWebServer.h) manages the socket that listens for new HTTP connections and the list of handlers used by the server.
+* [GCDWebServerConnection](Sources/GCDWebServer/include/GCDWebServerConnection.h) is instantiated by ```GCDWebServer``` to handle each new HTTP connection. Each instance stays alive until the connection is closed. You cannot use this class directly, but it is exposed so you can subclass it to override some hooks.
+* [GCDWebServerRequest](Sources/GCDWebServer/include/GCDWebServerRequest.h) is created by the ```GCDWebServerConnection``` instance after HTTP headers have been received. It wraps the request and handles the HTTP body if any. GCDWebServer comes with [several subclasses](Sources/GCDWebServer/Requests) of ```GCDWebServerRequest``` to handle common cases like storing the body in memory or stream it to a file on disk.
+* [GCDWebServerResponse](Sources/GCDWebServer/include/GCDWebServerResponse.h) is created by the request handler and wraps the response HTTP headers and optional body. GCDWebServer comes with [several subclasses](Sources/GCDWebServer/Responses) of ```GCDWebServerResponse``` to handle common cases like HTML text in memory or streaming a file from disk.
 
 Implementing Handlers
 =====================
@@ -279,7 +262,7 @@ GCDWebServer relies on "handlers" to process incoming web requests and generatin
 
 Handlers require 2 GCD blocks:
 * The ```GCDWebServerMatchBlock``` is called on every handler added to the ```GCDWebServer``` instance whenever a web request has started (i.e. HTTP headers have been received). It is passed the basic info for the web request (HTTP method, URL, headers...) and must decide if it wants to handle it or not. If yes, it must return a new ```GCDWebServerRequest``` instance (see above) created with this info. Otherwise, it simply returns nil.
-* The ```GCDWebServerProcessBlock``` or ```GCDWebServerAsyncProcessBlock``` is called after the web request has been fully received and is passed the ```GCDWebServerRequest``` instance created at the previous step. It must return synchronously (if using ```GCDWebServerProcessBlock```) or asynchronously (if using ```GCDWebServerAsyncProcessBlock```) a ```GCDWebServerResponse``` instance (see above) or nil on error, which will result in a 500 HTTP status code returned to the client. It's however recommended to return an instance of [GCDWebServerErrorResponse](GCDWebServer/Responses/GCDWebServerErrorResponse.h) on error so more useful information can be returned to the client.
+* The ```GCDWebServerProcessBlock``` or ```GCDWebServerAsyncProcessBlock``` is called after the web request has been fully received and is passed the ```GCDWebServerRequest``` instance created at the previous step. It must return synchronously (if using ```GCDWebServerProcessBlock```) or asynchronously (if using ```GCDWebServerAsyncProcessBlock```) a ```GCDWebServerResponse``` instance (see above) or nil on error, which will result in a 500 HTTP status code returned to the client. It's however recommended to return an instance of [GCDWebServerErrorResponse](Sources/GCDWebServer/include/GCDWebServerErrorResponse.h) on error so more useful information can be returned to the client.
 
 Note that most methods on ```GCDWebServer``` to add handlers only require the ```GCDWebServerProcessBlock``` or ```GCDWebServerAsyncProcessBlock``` as they already provide a built-in ```GCDWebServerMatchBlock``` e.g. to match a URL path with a Regex.
 
@@ -364,9 +347,9 @@ Both for debugging and informational purpose, GCDWebServer logs messages extensi
 
 By default, all messages logged by GCDWebServer are sent to its built-in logging facility, which simply outputs to ```stderr``` (assuming a terminal type device is connected). In order to better integrate with the rest of your app or because of the amount of information logged, you might want to use another logging facility.
 
-GCDWebServer has automatic support for [XLFacility](https://github.com/swisspol/XLFacility) (by the same author as GCDWebServer and also open-source): if it is in the same Xcode project, GCDWebServer should use it automatically instead of the built-in logging facility (see [GCDWebServerPrivate.h](GCDWebServer/Core/GCDWebServerPrivate.h) for the implementation details).
+GCDWebServer has automatic support for [XLFacility](https://github.com/swisspol/XLFacility) (by the same author as GCDWebServer and also open-source): if it is in the same Xcode project, GCDWebServer should use it automatically instead of the built-in logging facility (see [GCDWebServerPrivate.h](Sources/GCDWebServer/Private/GCDWebServerPrivate.h) for the implementation details).
 
-It's also possible to use a custom logging facility - see [GCDWebServer.h](GCDWebServer/Core/GCDWebServer.h) for more information.
+It's also possible to use a custom logging facility - see [GCDWebServer.h](Sources/GCDWebServer/include/GCDWebServer.h) for more information.
 
 Advanced Example 1: Implementing HTTP Redirects
 ===============================================
