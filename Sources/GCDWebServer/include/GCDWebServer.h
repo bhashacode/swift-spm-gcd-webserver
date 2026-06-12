@@ -642,3 +642,25 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
 #endif
 
 NS_ASSUME_NONNULL_END
+
+// Public umbrella imports for Swift Package Manager. SwiftPM uses this header as
+// the generated Clang module umbrella, so every public header must be imported
+// here to make the full Objective-C API visible from Swift with `import GCDWebServer`.
+#import "GCDWebServerConnection.h"
+#import "GCDWebServerFunctions.h"
+#import "GCDWebServerHTTPStatusCodes.h"
+
+#import "GCDWebServerDataRequest.h"
+#import "GCDWebServerFileRequest.h"
+#import "GCDWebServerMultiPartFormRequest.h"
+#import "GCDWebServerURLEncodedFormRequest.h"
+
+#import "GCDWebServerDataResponse.h"
+#import "GCDWebServerErrorResponse.h"
+#import "GCDWebServerFileResponse.h"
+#import "GCDWebServerStreamedResponse.h"
+
+#import "GCDWebUploader.h"
+#import "GCDWebDAVServer.h"
+
+#import "GCDWebServers.h"
